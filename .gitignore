@@ -1,0 +1,10 @@
+# Worktree mount points (each worktree tracks its own branch)
+.worktrees/
+
+# Secrets — never commit real API keys; mcp.json ships with a placeholder only
+.env
+*.key
+
+# OS noise
+Thumbs.db
+.DS_Store

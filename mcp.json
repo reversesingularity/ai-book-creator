@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "obsidian-lore": {
+      "command": "bun",
+      "args": [
+        "run",
+        "obsidian-mcp-server"
+      ],
+      "env": {
+        "OBSIDIAN_API_KEY": "YOUR_LOCAL_REST_API_KEY_HERE",
+        "OBSIDIAN_PORT": "27124",
+        "OBSIDIAN_HOST": "127.0.0.1",
+        "OBSIDIAN_READ_ONLY": "false",
+        "OBSIDIAN_ENABLE_COMMANDS": "true",
+        "OBSIDIAN_READ_PATHS": ".novel-os/novel/, .novel-os/standards/",
+        "OBSIDIAN_WRITE_PATHS": ".novel-os/novel/decisions.md, .novel-os/novel/character-profiles.md, .novel-os/standards/visual-language.md"
+      }
+    }
+  }
+}

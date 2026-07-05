@@ -1,0 +1,136 @@
+#!/usr/bin/env python3
+# hooks/pre-commit  (installed to .git/hooks/pre-commit by sync-worktrees.sh)
+# Validates AI-generated prose against strict continuity and formatting rules before allowing a commit.
+# Establishes a self-healing loop by returning targeted errors to the Cursor orchestrator.
+# Extended to support visual prompt file validation.
+
+import os
+import re
+import sys
+
+# Configuration Constraints
+MIN_WORD_COUNT = 1500
+OUTPUT_DIR = "book_output/"
+VISUAL_PROMPT_DIR = "image_prompts/"
+MAX_EM_DASH_COUNT = 15
+MIN_VISUAL_PROMPT_CHARS = 400
+BANNED_PHRASES = [
+    "palpable tension",
+    "kaleidoscope of emotions",
+    "the air crackled",
+    "shivers down her spine",
+    "shivers down his spine",
+    "despite herself",
+    "ghost of a smile",
+    "let out a breath",
+]
+UNRESOLVED_PLOT_FLAGS = ["TODO", "TBD", "[PLOT-FLAG]", "[UNRESOLVED]", "FIXME"]
+
+
+def check_file(filepath):
+    errors = []
+
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            content = f.read()
+    except Exception as e:
+        return [f"File read error: {str(e)}"]
+
+    is_prose = filepath.startswith(OUTPUT_DIR)
+    is_visual = filepath.startswith(VISUAL_PROMPT_DIR)
+
+    if is_prose:
+        # 1. Word Count Validation
+        word_count = len(content.split())
+        if word_count < MIN_WORD_COUNT:
+            errors.append(
+                f"Word count failure: {word_count} words. Minimum required is {MIN_WORD_COUNT}."
+            )
+
+        # 2. Banned Phrase Detection (The ICK List Verification)
+        for phrase in BANNED_PHRASES:
+            if re.search(r"\b" + re.escape(phrase) + r"\b", content, re.IGNORECASE):
+                errors.append(
+                    f"Stylistic violation: Detected banned AI vocabulary '{phrase}'."
+                )
+
+        # 3. Unresolved plot flags left by planning or drafting agents
+        for flag in UNRESOLVED_PLOT_FLAGS:
+            if flag in content:
+                errors.append(
+                    f"Continuity violation: Unresolved plot flag '{flag}' present in final prose."
+                )
+
+        # 4. Artifact Detection (unrendered markdown or LLM thought blocks)
+        if "```" in content:
+            errors.append(
+                "Formatting violation: Detected raw markdown code blocks in narrative prose."
+            )
+        if "<think>" in content or "</think>" in content:
+            errors.append(
+                "Formatting violation: Detected internal LLM reasoning tokens in final output."
+            )
+
+        # 5. Syntactic Overuse Limits (Em-Dash linting for pacing)
+        em_dash_count = content.count("—") + content.count("--")
+        if em_dash_count > MAX_EM_DASH_COUNT:
+            errors.append(
+                f"Stylistic warning: High em-dash count ({em_dash_count}). "
+                "Ensure pacing is balanced and sentence structure is varied."
+            )
+
+    if is_visual:
+        # 6. Visual Prompt Basic Validation
+        if "```yaml" not in content and "---" not in content[:200]:
+            errors.append(
+                "Visual prompt violation: Missing YAML frontmatter block. Add structured metadata."
+            )
+        if len(content) < MIN_VISUAL_PROMPT_CHARS:
+            errors.append(
+                "Visual prompt violation: Prompt appears very short. "
+                "Ensure sufficient detail for production use."
+            )
+
+    return errors
+
+
+def main():
+    # Only evaluate markdown files staged in the book_output or image_prompts directories.
+    staged_files_cmd = os.popen("git diff --cached --name-only --diff-filter=ACM").read()
+    staged_files = [
+        f
+        for f in staged_files_cmd.splitlines()
+        if (f.startswith(OUTPUT_DIR) or f.startswith(VISUAL_PROMPT_DIR))
+        and f.endswith(".md")
+    ]
+
+    if not staged_files:
+        sys.exit(0)
+
+    all_errors = {}
+    for file in staged_files:
+        errors = check_file(file)
+        if errors:
+            all_errors[file] = errors
+
+    # Self-Healing Loop Trigger
+    if all_errors:
+        print("\n[!] COMMIT REJECTED: Prose / Visual Prompt Validation Failed\n", file=sys.stderr)
+        for file, errors in all_errors.items():
+            print(f"File: {file}", file=sys.stderr)
+            for error in errors:
+                print(f"  - {error}", file=sys.stderr)
+        print(
+            "\nAction Required: Route back to the appropriate agent "
+            "(Nemotron Editor for prose, Visual Director for visual prompts) "
+            "for remediation before committing.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    print("Prose / Visual validation passed. Commit allowed.")
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
