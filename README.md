@@ -6,6 +6,8 @@ Cursor acts as the Lead Orchestrator. Specialized AI agents work in isolated Git
 
 Built for authors who want a reproducible, self-correcting pipeline—not a one-shot chat session.
 
+**Current status:** Infrastructure complete · **Pre-Phase 1** · Resume from [`docs/session-save.md`](docs/session-save.md)
+
 ---
 
 ## What This Does
@@ -136,7 +138,7 @@ Fill **Layer 1 and 2** before Phase 1:
 - **Git** with worktree support
 - **Bash** (Git Bash or WSL on Windows) for `sync-worktrees.sh`
 - **Python 3** (pre-commit hook)
-- **Bun** (Obsidian MCP server runner)
+- **Node.js 24+** (Obsidian MCP server via `npx`)
 - **Cursor** with MCP enabled
 - **Obsidian** with the [Local REST API](https://github.com/coddingtonbear/obsidian-local-rest-api) community plugin
 
@@ -166,15 +168,18 @@ Each worktree gets `book_output/` and `image_prompts/` output trees. The validat
 
 ```bash
 cp .env.example .env
-# Edit .env — set your Local REST API key:
-#   OBSIDIAN_API_KEY=your-key-here
+# Edit .env — paste the raw API key from Obsidian → Settings → Local REST API:
+#   OBSIDIAN_API_KEY=<64-character-hex-string>
+# Do NOT include "Bearer" — the MCP server adds that automatically.
 ```
 
 Cursor reads [`.cursor/mcp.json`](.cursor/mcp.json), which loads secrets from `.env` via `envFile`. **Never commit `.env`.**
 
-Ensure Obsidian is running with Local REST API enabled (default port `27124`).
+Ensure Obsidian is running with Local REST API enabled (HTTPS port `27124`).
 
-Restart Cursor after creating `.env`, then verify under **Customize → MCP** that `obsidian-lore` shows connected tools.
+1. Restart Cursor after creating or editing `.env`.
+2. Open **Customize → MCP** and **enable** `obsidian-lore` (project servers default to off).
+3. Click **refresh** on `obsidian-lore` and confirm ~14 tools appear.
 
 ### 3. Fill creative templates
 
@@ -201,7 +206,10 @@ ai-book-creator/
 │   ├── standards/
 │   ├── novel/
 │   └── manuscripts/
-├── docs/prd.md               # Pipeline mandate (source of truth)
+├── docs/
+│   ├── prd.md                # Pipeline mandate (source of truth)
+│   ├── governance.md         # Orchestrator rules and phase gates
+│   └── session-save.md       # Live checkpoint — resume here
 ├── hooks/pre-commit          # Prose + visual prompt validation
 ├── sync-worktrees.sh         # Worktree + hook bootstrap
 ├── mcp.json                  # Mirror of .cursor/mcp.json (no secrets)
@@ -256,6 +264,8 @@ Full editorial constraints: [`.claude/skills/ghostproof-lite.md`](.claude/skills
 
 ## Further Reading
 
+- [`docs/session-save.md`](docs/session-save.md) — **start here** when resuming a session
+- [`docs/governance.md`](docs/governance.md) — orchestrator rules and phase gates
 - [`docs/prd.md`](docs/prd.md) — full pipeline specification
 - [`architectural-blueprint-multi-agent-orchestration-book-writer.md`](architectural-blueprint-multi-agent-orchestration-book-writer.md) — deep architecture notes
 

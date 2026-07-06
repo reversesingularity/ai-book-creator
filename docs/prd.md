@@ -1,5 +1,7 @@
 # Automated Novel Generation: Product Requirements and Orchestration Pipeline
 
+> **Governance:** Orchestrator rules in [`governance.md`](governance.md). Session checkpoint in [`session-save.md`](session-save.md). Canonical repo: [reversesingularity/ai-book-creator](https://github.com/reversesingularity/ai-book-creator).
+
 ## 1. System Objective
 
 To establish a fully autonomous, self-correcting writing pipeline utilizing isolated Git worktrees and specialized AI agents to generate human-quality long-form fiction **and professional visual assets** without context degradation or visual inconsistency.
@@ -12,7 +14,7 @@ The generation process must proceed linearly through distinct phases, passing th
 
 - **Agent**: Memory Keeper (Opus 4.8) + Visual Director (Opus 4.8)
 - **Workspace**: `worktree-planning`
-- **Action**: Ingests the project premise and standard guides via MCP. Updates `.novel-os/novel/writing-plan.md` and generates high-level, overarching narrative arcs. Visual Director begins high-level visual motif planning and identifies key chapters/scenes requiring major illustrations.
+- **Action**: Ingests the project premise and standard guides via MCP. Updates `.novel-os/manuscripts/writing-plan.md` and generates high-level, overarching narrative arcs. Visual Director begins high-level visual motif planning and identifies key chapters/scenes requiring major illustrations.
 
 ### Phase 2: Granular Outline Creation (The Outline Creator)
 
@@ -74,3 +76,52 @@ Every commit of prose to `book_output/` or prompts to `image_prompts/` is interc
 | Layer 1: Standards | `.novel-os/standards/` | Global writing DNA + global visual language rules. Narrative voice, prose style, POV preferences, genre conventions, locked visual aesthetic bible. |
 | Layer 2: Novel | `.novel-os/novel/` | Creative vision for the current project. Story premise, creative decisions, novel-specific style guide, character profiles. |
 | Layer 3: Manuscripts | `.novel-os/manuscripts/` | The detailed roadmap. Story outline, character arcs, scene-by-scene writing tasks, registered visual prompt tasks. |
+
+## 6. Phase 0: Infrastructure & Readiness Gates
+
+Before Phase 1, the orchestrator must confirm:
+
+1. **Worktrees** — `bash sync-worktrees.sh` has created and locked `worktree-planning`, `worktree-drafting`, `worktree-editing`.
+2. **Validation hook** — `hooks/pre-commit` is installed to `.git/hooks/pre-commit`.
+3. **MCP secrets** — `OBSIDIAN_API_KEY` set in `.env` (64-char hex, no `Bearer` prefix); loaded via `envFile`.
+4. **Obsidian runtime** — vault open; Local REST API enabled on port `27124`; `obsidian-lore` **enabled and connected** in Cursor (Customize → MCP).
+5. **Creative seed** — `premise.md` has no bracket placeholders.
+6. **Visual bible** — `visual-language.md` has no `[DEFINE]` placeholders if Phases 2.5 or 5 are in scope.
+
+See [`session-save.md`](session-save.md) for the live gate checklist.
+
+## 7. MCP Configuration (Secrets via Environment)
+
+Cursor reads `.cursor/mcp.json`. Secrets must **not** be committed. Use:
+
+```json
+{
+  "mcpServers": {
+    "obsidian-lore": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "obsidian-mcp-server@latest"],
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "OBSIDIAN_BASE_URL": "https://127.0.0.1:27124",
+        "OBSIDIAN_VERIFY_SSL": "false",
+        "OBSIDIAN_READ_ONLY": "false",
+        "OBSIDIAN_ENABLE_COMMANDS": "true",
+        "OBSIDIAN_READ_PATHS": ".novel-os/novel/, .novel-os/standards/",
+        "OBSIDIAN_WRITE_PATHS": ".novel-os/novel/decisions.md, .novel-os/novel/character-profiles.md, .novel-os/standards/visual-language.md"
+      }
+    }
+  }
+}
+```
+
+Copy `.env.example` → `.env` and paste the **raw** API key from Obsidian → Settings → Local REST API (64-character hex; do **not** include `Bearer`). Enable `obsidian-lore` under Customize → MCP and refresh after `.env` changes.
+
+## 8. Session Resume Protocol
+
+At the start of every orchestration session:
+
+1. Read [`session-save.md`](session-save.md) for pipeline phase and open gates.
+2. Read [`governance.md`](governance.md) for orchestrator rules.
+3. Re-verify MCP connection before lore-dependent agent work.
+4. At session end, update `session-save.md` with phase progress, decisions, and next actions.

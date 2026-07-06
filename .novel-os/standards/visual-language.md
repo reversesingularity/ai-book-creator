@@ -10,6 +10,8 @@ editable_by: [human-author, memory-keeper-with-approval]
 
 This is the locked aesthetic law for the entire series. The Visual Director treats this file as immutable; only the human author (or the Memory Keeper with explicit approval) may edit it. Every generated image prompt must comply with every section below.
 
+**Status:** Template — blocked at Phase 0 gate G2. See [`docs/session-save.md`](../../docs/session-save.md).
+
 ## Global Aesthetic
 
 - Render style: hyper-realistic, cinematic, 8K, photorealistic lighting. No cartoon, anime, or painterly styles unless explicitly commissioned.

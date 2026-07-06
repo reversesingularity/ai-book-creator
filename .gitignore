@@ -1,7 +1,7 @@
 # Worktree mount points (each worktree tracks its own branch)
 .worktrees/
 
-# Secrets — never commit real API keys; mcp.json ships with a placeholder only
+# Secrets — never commit; MCP loads via envFile in .cursor/mcp.json
 .env
 *.key
 

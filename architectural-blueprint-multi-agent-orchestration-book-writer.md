@@ -264,15 +264,13 @@ The MCP server connects the Claude Code and Cursor environment directly to the l
 {
   "mcpServers": {
     "obsidian-lore": {
-      "command": "bun",
-      "args": [
-        "run",
-        "obsidian-mcp-server"
-      ],
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "obsidian-mcp-server@latest"],
+      "envFile": "${workspaceFolder}/.env",
       "env": {
-        "OBSIDIAN_API_KEY": "YOUR_LOCAL_REST_API_KEY_HERE",
-        "OBSIDIAN_PORT": "27124",
-        "OBSIDIAN_HOST": "127.0.0.1",
+        "OBSIDIAN_BASE_URL": "https://127.0.0.1:27124",
+        "OBSIDIAN_VERIFY_SSL": "false",
         "OBSIDIAN_READ_ONLY": "false",
         "OBSIDIAN_ENABLE_COMMANDS": "true",
         "OBSIDIAN_READ_PATHS": ".novel-os/novel/, .novel-os/standards/",
@@ -282,6 +280,8 @@ The MCP server connects the Claude Code and Cursor environment directly to the l
   }
 }
 ```
+
+Secrets (`OBSIDIAN_API_KEY`) live in `.env` (gitignored). Copy `.env.example` → `.env`. The key is a **64-character hex string** — store it raw, without a `Bearer` prefix. Cursor reads `.cursor/mcp.json`; root `mcp.json` mirrors this config for documentation. Enable `obsidian-lore` under Customize → MCP and refresh after `.env` changes.
 
 The DeepLore state-machine logic means that YAML frontmatter dictates relevance. If the orchestrator sets the scene's location to "The Crimson Quarter," only lore entries containing that location tag are eligible for injection, filtering out irrelevant historical or geographic data automatically and preserving the prompt cache. **The same mechanism ensures the Visual Director only retrieves visually relevant canon elements.**
 

@@ -3,11 +3,21 @@ type: manuscripts
 layer: 3
 status: template
 maintained_by: memory-keeper
+pipeline_phase: pre-phase-1
 ---
 
 # Writing Plan & Scene Roadmap
 
 > Layer 3: the detailed roadmap. Phase 1 fills the arc table; Phase 2 expands each chapter into scene-by-scene tasks; Phase 2.5 registers visual prompt tasks.
+
+## Pipeline Status
+
+| Field | Value |
+|-------|-------|
+| **Current phase** | Pre-Phase 1 (infrastructure complete) |
+| **Session checkpoint** | [`docs/session-save.md`](../../docs/session-save.md) |
+| **Blocked by** | `premise.md` and `visual-language.md` human placeholders |
+| **Last updated** | 2026-07-06 |
 
 ## High-Level Arcs (Phase 1 output)
 
