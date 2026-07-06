@@ -18,7 +18,7 @@ pipeline_phase: pre-phase-1
 | **GitHub** | https://github.com/reversesingularity/ai-book-creator |
 | **Local path** | `f:\Projects\ai-book-creator` |
 | **Default branch** | `main` |
-| **Latest commit** | `abb701a` — Obsidian MCP fix + governance sync |
+| **Latest commit** | `d9ab19f` — Obsidian MCP fix + governance sync |
 | **Remote** | `origin` → `https://github.com/reversesingularity/ai-book-creator.git` |
 
 ## Pipeline Position
